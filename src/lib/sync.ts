@@ -1,14 +1,20 @@
 import sequelize from './db';
-import User from '../models/User';
-import Course from '../models/Course';
+import '../models'; // Importa todas las asociaciones y modelos
 
-export async function sincronizarBaseDeDatos() {
+const syncDatabase = async () => {
   try {
-    // force: false asegura que no borres datos si la tabla ya existe
-    // alter: true modifica la tabla si agregas columnas nuevas luego
-    await sequelize.sync({ force: false, alter: true });
-    console.log('¡Tablas sincronizadas con éxito en PostgreSQL!');
+    await sequelize.authenticate();
+    console.log('Conexión a Supabase establecida correctamente.');
+
+    // alter: true actualiza las tablas si cambiaste algo, force: true borra y crea desde cero
+    await sequelize.sync({ alter: true }); 
+    console.log('¡Todas las tablas han sido sincronizadas exitosamente en Supabase!');
+
+    process.exit(0);
   } catch (error) {
-    console.error('Error sincronizando las tablas:', error);
+    console.error('Error al sincronizar la base de datos:', error);
+    process.exit(1);
   }
-}
+};
+
+syncDatabase();

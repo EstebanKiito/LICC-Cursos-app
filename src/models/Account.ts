@@ -1,6 +1,5 @@
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../lib/db';
-import User from './User';
 
 class Account extends Model {}
 
@@ -14,7 +13,7 @@ Account.init({
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: User,
+      model: 'users', // Cambiamos el modelo importado por el nombre exacto de la tabla en string
       key: 'id',
     }
   },
@@ -32,9 +31,5 @@ Account.init({
   tableName: 'accounts',
   timestamps: true,
 });
-
-// Definición de las Relaciones (Asociaciones)
-User.hasMany(Account, { foreignKey: 'userId', as: 'accounts' });
-Account.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 export default Account;
