@@ -28,6 +28,11 @@ User.init({
   role: {
     type: DataTypes.ENUM('admin', 'moderator', 'student'),
     defaultValue: 'student', // Rol por defecto en inglés
+  },
+  isProfilePublic: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true, // Por defecto es público, como en la mayoría de redes
   }
 }, {
   sequelize,
