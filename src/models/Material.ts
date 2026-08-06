@@ -19,11 +19,27 @@ Material.init({
   },
   fileUrl: {
     type: DataTypes.STRING,
-    allowNull: false, // El link del S3 es obligatorio
+    allowNull: false, // El link del S3/Supabase es obligatorio
   },
   fileType: {
     type: DataTypes.STRING,
     allowNull: true, // Ej: 'pdf', 'zip', 'docx'
+  },
+  type: {
+    type: DataTypes.ENUM(
+      'clase',
+      'ayudantia',
+      'tarea',
+      'proyecto',
+      'lab',
+      'libro',
+      'apunte',
+      'resumen',
+      'taller',
+      'extra'
+    ),
+    allowNull: false,
+    defaultValue: 'apunte', // Por si acaso no se especifica
   },
   // Las llaves foráneas (userId y courseId) se inyectarán al definir las relaciones
 }, {
