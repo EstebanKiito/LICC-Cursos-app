@@ -21,6 +21,10 @@ User.init({
       isEmail: true,
     }
   },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: true, // Permite nulos para usuarios default o que no tengan imagen de perfil
+  },
   password: {
     type: DataTypes.STRING,
     allowNull: true, // Permite nulos para los usuarios que entren con OAuth
