@@ -197,4 +197,6 @@ export {
   Conversation,
   ConversationParticipant,
   Message,
+  Annotation,
+  Notebook,
 };
