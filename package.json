@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:sync": "node --env-file=.env -r tsx/cjs src/lib/sync.ts"
+    "db:sync": "node --env-file=.env -r tsx/cjs src/lib/sync.ts",
+    "db:seed": "node --env-file=.env -r tsx/cjs src/lib/seed.ts"
   },
   "dependencies": {
     "next": "16.2.12",
