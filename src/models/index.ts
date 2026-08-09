@@ -15,7 +15,7 @@ import Annotation from "./Annotation";
 import Notebook from "./Notebook";
 
 // --- 1. AUTENTICACIÓN Y USUARIOS ---
-User.hasMany(Account, { foreignKey: "userId", as: "accounts" });
+User.hasMany(Account, { foreignKey: "userId", as: "userAccounts" });
 Account.belongsTo(User, { foreignKey: "userId", as: "user" });
 
 // --- 2. ACADÉMICO Y MATERIALES ---
@@ -197,4 +197,6 @@ export {
   Conversation,
   ConversationParticipant,
   Message,
+  Annotation,
+  Notebook,
 };

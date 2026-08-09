@@ -56,7 +56,11 @@ User.init(
   },
   {
     sequelize,
-    modelName: "User",
+    // En minúscula a propósito: el SequelizeAdapter de Auth.js hace
+    // Account.belongsTo(User) sin foreignKey, y Sequelize deriva la FK del
+    // modelName. Con "user" deriva "userId", que ya existe en Account
+    // (mapeado a user_id), en vez de inyectar una columna "UserId" inexistente.
+    modelName: "user",
     tableName: "users",
     timestamps: true,
   },
