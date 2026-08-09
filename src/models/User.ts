@@ -43,6 +43,16 @@ User.init(
       allowNull: false,
       defaultValue: true, // Por defecto es público, como en la mayoría de redes
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW, // ¡Esto salva el día!
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW, // ¡Esto salva el día!
+      allowNull: false,
+    },
   },
   {
     sequelize,

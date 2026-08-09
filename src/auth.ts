@@ -2,15 +2,15 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import SequelizeAdapter from "@auth/sequelize-adapter";
 import sequelize from "./lib/db";
-import { User, Account } from "./models";
+import { User, Account } from "./models/index";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // Le pasamos tu instancia de Sequelize y le decimos qué modelos usar
   adapter: SequelizeAdapter(sequelize, {
     synchronize: false, // No permitir cambios automáticos en la base de datos(on the fly)
     models: {
-      User: sequelize.models.User as any,
-      Account: sequelize.models.Account as any,
+      User: User as any,
+      Account: Account as any,
     },
   }),
   // Estrategia JWT: más rápida, no satura la base de datos con sesiones

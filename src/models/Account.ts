@@ -35,7 +35,18 @@ Account.init(
     scope: { type: DataTypes.STRING, allowNull: true },
     id_token: { type: DataTypes.TEXT, allowNull: true },
     session_state: { type: DataTypes.STRING, allowNull: true },
+    createdAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+      allowNull: false,
+    },
   },
+
   {
     sequelize,
     modelName: "Account",
