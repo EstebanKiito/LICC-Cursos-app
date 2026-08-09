@@ -7,6 +7,7 @@ import { User, Account } from "./models";
 export const { handlers, signIn, signOut, auth } = NextAuth({
   // Le pasamos tu instancia de Sequelize y le decimos qué modelos usar
   adapter: SequelizeAdapter(sequelize, {
+    synchronize: false, // No permitir cambios automáticos en la base de datos(on the fly)
     models: {
       User: sequelize.models.User as any,
       Account: sequelize.models.Account as any,
@@ -20,6 +21,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
+  debug: true, // Para ver logs de depuración en la consola
   callbacks: {
     // Inyectamos el ID del usuario de la BD en el token para usarlo en el backend
     async jwt({ token, user }) {

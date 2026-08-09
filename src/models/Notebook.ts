@@ -20,6 +20,10 @@ Notebook.init(
       allowNull: true,
       defaultValue: "", // Empieza vacío para que el usuario escriba su Markdown/LaTeX
     },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false, // Cada cuaderno pertenece a un usuario
+    },
   },
   {
     sequelize,

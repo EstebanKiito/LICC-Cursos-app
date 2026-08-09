@@ -6,8 +6,7 @@ class User extends Model {}
 User.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
       primaryKey: true,
     },
     name: {
@@ -25,6 +24,7 @@ User.init(
     emailVerified: {
       type: DataTypes.DATE, // Requerido por NextAuth
       allowNull: true,
+      field: "email_verified",
     },
     image: {
       type: DataTypes.STRING,

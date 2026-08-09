@@ -6,14 +6,14 @@ class Account extends Model {}
 Account.init(
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
-      references: { model: "users", key: "id" },
+      field: "user_id", // Postgres usa snake_case por convención, así que mapeamos a user_id
     },
     type: {
       type: DataTypes.STRING,
@@ -26,6 +26,7 @@ Account.init(
     providerAccountId: {
       type: DataTypes.STRING,
       allowNull: false,
+      field: "provider_account_id",
     },
     refresh_token: { type: DataTypes.TEXT, allowNull: true },
     access_token: { type: DataTypes.TEXT, allowNull: true },
