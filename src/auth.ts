@@ -21,7 +21,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
-  debug: true, // Para ver logs de depuración en la consola
+  debug: false, // Para ver logs de depuración en la consola
   callbacks: {
     // Inyectamos el ID del usuario de la BD en el token para usarlo en el backend
     async jwt({ token, user }) {

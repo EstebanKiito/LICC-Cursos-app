@@ -16,7 +16,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
       rejectUnauthorized: false, // Supabase exige conexiones seguras por SSL
     },
   },
-  logging: console.log, // Cambia a 'console.log' si deseas ver las consultas SQL nativas en tu terminal
+  logging: false, // Cambia a 'console.log' si deseas ver las consultas SQL nativas en tu terminal
 });
 
 export default sequelize;
