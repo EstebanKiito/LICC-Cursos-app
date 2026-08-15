@@ -2,14 +2,15 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { auth } from "@/auth";
 import { buildPublicUrl, getR2Bucket, getR2Client } from "@/lib/r2";
-import { Material } from "@/models";
+import { Material, User } from "@/models";
 import {
   isMaterialType,
   MAX_FILE_BYTES,
   oversizeMessage,
+  type DeleteMaterialState,
   type MaterialType,
   type UploadMaterialState,
 } from "@/types/material";
@@ -148,4 +149,97 @@ export async function uploadMaterial(
   }
 
   return { status: "success", message: `"${originalName}" se subió correctamente.` };
+}
+
+/**
+ * Deriva la llave de R2 a partir de la URL publica, invirtiendo el prefijo que
+ * arma `buildPublicUrl`. Vive aca (y no en `lib/r2.ts`) porque es la unica
+ * accion que necesita el sentido inverso; subir solo necesita el directo.
+ */
+function extractKeyFromUrl(url: string): string | null {
+  const base = process.env.NEXT_PUBLIC_R2_PUBLIC_URL?.replace(/\/+$/, "");
+
+  if (!base || !url.startsWith(`${base}/`)) {
+    return null;
+  }
+
+  return url.slice(base.length + 1);
+}
+
+/**
+ * Elimina un material: valida que quien lo pide sea el dueño o un admin, borra
+ * el objeto en R2 y despues la fila en la base de datos.
+ *
+ * `courseCode` es opcional para permitir revalidar la ruta literal cuando el
+ * cliente lo tiene a mano; si no llega, se cae al patron dinamico.
+ */
+export async function deleteMaterial(
+  materialId: number,
+  fileUrl: string,
+  courseCode?: string,
+): Promise<DeleteMaterialState> {
+  // 1. Autorizacion, igual que en `uploadMaterial`: se verifica dentro de la
+  // accion porque es un endpoint POST publico.
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    return { status: "error", message: "Inicia sesión para eliminar materiales." };
+  }
+
+  const dbUser = await User.findByPk(userId);
+  const material = await Material.findByPk(materialId);
+
+  if (!material) {
+    return { status: "error", message: "El material ya no existe." };
+  }
+
+  const isOwner = material.get("userId") === dbUser?.get("id");
+  const isAdmin = dbUser?.get("role") === "admin";
+
+  if (!dbUser || (!isAdmin && !isOwner)) {
+    return {
+      status: "error",
+      message: "No tienes permiso para eliminar este material.",
+    };
+  }
+
+  try {
+    // 2. Borrado fisico en R2 primero: si falla, el material sigue listado y
+    // se puede reintentar. Si se borrara la fila antes, un fallo de R2
+    // dejaria el archivo huerfano sin ninguna referencia para reintentar.
+    const key = extractKeyFromUrl(fileUrl);
+
+    if (!key) {
+      console.error("[deleteMaterial] no se pudo derivar la key de", fileUrl);
+
+      return {
+        status: "error",
+        message: "No se pudo eliminar el archivo. Inténtalo de nuevo.",
+      };
+    }
+
+    await getR2Client().send(
+      new DeleteObjectCommand({ Bucket: getR2Bucket(), Key: key }),
+    );
+
+    // 3. Registro en la base de datos.
+    await material.destroy();
+  } catch (error) {
+    console.error("[deleteMaterial] fallo la eliminación", error);
+
+    return {
+      status: "error",
+      message: "No se pudo eliminar el material. Inténtalo de nuevo.",
+    };
+  }
+
+  // 4. Refresco, mismo criterio que `uploadMaterial`.
+  if (courseCode) {
+    revalidatePath(`/cursos/${courseCode}`);
+  } else {
+    revalidatePath("/cursos/[code]", "page");
+  }
+
+  return { status: "success", message: "Material eliminado." };
 }

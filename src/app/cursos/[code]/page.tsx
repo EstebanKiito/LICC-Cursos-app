@@ -14,6 +14,7 @@ import {
 } from "@/lib/course-format";
 import { getCourseByCode } from "@/lib/courses";
 import { getMaterialsByCourse } from "@/lib/materials";
+import { User } from "@/models";
 
 // `PageProps` es el helper global que genera `next typegen` (lo corren tanto
 // `next dev` como `next build`). En Next 16 `params` es un Promise: el acceso
@@ -51,7 +52,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 
 export default async function CoursePage({ params }: Props) {
   const session = await auth();
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect("/");
   }
 
@@ -64,6 +65,11 @@ export default async function CoursePage({ params }: Props) {
 
   const level = getCourseLevel(course.code);
   const materials = await getMaterialsByCourse(course.id);
+
+  // El rol no viaja en la cookie de sesion (solo `id`), asi que se consulta
+  // directo en la BD para poder hacer la validacion visual del boton de borrar.
+  const dbUser = await User.findByPk(session.user.id);
+  const isAdmin = dbUser?.get("role") === "admin";
 
   return (
     <section className="mx-auto max-w-7xl px-6 pt-16 pb-24">
@@ -126,7 +132,12 @@ export default async function CoursePage({ params }: Props) {
               en el servidor, donde el cliente no puede suplantarlo. */}
           <UploadMaterialForm courseId={course.id} courseCode={course.code} />
 
-          <MaterialList materials={materials} courseCode={course.code} />
+          <MaterialList
+            materials={materials}
+            courseCode={course.code}
+            currentUserId={session.user.id}
+            isAdmin={isAdmin}
+          />
         </div>
       </div>
     </section>

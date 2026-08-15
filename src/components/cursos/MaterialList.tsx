@@ -1,9 +1,12 @@
 import { DownloadSimpleIcon, FileDashedIcon } from "@phosphor-icons/react/ssr";
+import { DeleteMaterialButton } from "@/components/DeleteMaterialButton";
 import { MATERIAL_TYPE_LABELS, type MaterialDTO } from "@/types/material";
 
 type Props = {
   materials: MaterialDTO[];
   courseCode: string;
+  currentUserId: string;
+  isAdmin: boolean;
 };
 
 const dateFormatter = new Intl.DateTimeFormat("es-CL", {
@@ -12,7 +15,19 @@ const dateFormatter = new Intl.DateTimeFormat("es-CL", {
   year: "numeric",
 });
 
-function MaterialRow({ material }: { material: MaterialDTO }) {
+function MaterialRow({
+  material,
+  courseCode,
+  currentUserId,
+  isAdmin,
+}: {
+  material: MaterialDTO;
+  courseCode: string;
+  currentUserId: string;
+  isAdmin: boolean;
+}) {
+  const canDelete = isAdmin || material.userId === currentUserId;
+
   // Metadatos secundarios en una sola linea: tipo, autor y fecha. Se filtran
   // los ausentes para no dejar separadores colgando.
   const meta = [
@@ -50,11 +65,25 @@ function MaterialRow({ material }: { material: MaterialDTO }) {
         <DownloadSimpleIcon weight="bold" aria-hidden className="h-4 w-4" />
         <span className="hidden sm:inline">Descargar</span>
       </a>
+
+      {canDelete && (
+        <DeleteMaterialButton
+          materialId={material.id}
+          title={material.title}
+          fileUrl={material.fileUrl}
+          courseCode={courseCode}
+        />
+      )}
     </li>
   );
 }
 
-export function MaterialList({ materials, courseCode }: Props) {
+export function MaterialList({
+  materials,
+  courseCode,
+  currentUserId,
+  isAdmin,
+}: Props) {
   if (materials.length === 0) {
     return (
       <div className="mt-6 flex flex-col items-center rounded-xl border-2 border-dashed border-zinc-200 px-6 py-16 text-center dark:border-zinc-800">
@@ -87,7 +116,13 @@ export function MaterialList({ materials, courseCode }: Props) {
 
       <ul className="mt-3 divide-y divide-zinc-200 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900">
         {materials.map((material) => (
-          <MaterialRow key={material.id} material={material} />
+          <MaterialRow
+            key={material.id}
+            material={material}
+            courseCode={courseCode}
+            currentUserId={currentUserId}
+            isAdmin={isAdmin}
+          />
         ))}
       </ul>
     </div>

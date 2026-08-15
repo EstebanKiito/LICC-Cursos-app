@@ -22,6 +22,7 @@ type MaterialRow = {
   fileType: string | null;
   type: string;
   createdAt: Date | string;
+  userId: string;
   "author.name": string | null;
 };
 
@@ -39,6 +40,7 @@ function toMaterialDTO(row: MaterialRow): MaterialDTO {
     type,
     createdAt: new Date(row.createdAt).toISOString(),
     authorName: row["author.name"] ?? null,
+    userId: row.userId,
   };
 }
 
@@ -49,7 +51,15 @@ export async function getMaterialsByCourse(
   // `raw: true` con `include` aplana el JOIN a claves con punto
   // ("author.name"), por eso `MaterialRow` las declara asi.
   const rows = (await Material.findAll({
-    attributes: ["id", "title", "fileUrl", "fileType", "type", "createdAt"],
+    attributes: [
+      "id",
+      "title",
+      "fileUrl",
+      "fileType",
+      "type",
+      "createdAt",
+      "userId",
+    ],
     where: { courseId },
     include: [{ model: User, as: "author", attributes: ["name"] }],
     order: [["createdAt", "DESC"]],

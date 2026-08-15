@@ -87,4 +87,19 @@ export type MaterialDTO = {
   type: MaterialType;
   createdAt: string;
   authorName: string | null;
+  userId: string;
+};
+
+/**
+ * Estado que la Server Action `deleteMaterial` devuelve a `useTransition`.
+ * Mismo motivo que `UploadMaterialState` para vivir aca y no en la accion.
+ */
+export type DeleteMaterialState = {
+  status: "idle" | "success" | "error";
+  message: string;
+};
+
+export const INITIAL_DELETE_STATE: DeleteMaterialState = {
+  status: "idle",
+  message: "",
 };
