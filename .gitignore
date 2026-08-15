@@ -43,3 +43,7 @@ next-env.d.ts
 informe.md
 
 .vscode
+
+.agents
+.claude
+skills-lock.json
