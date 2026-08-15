@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { buildPublicUrl, getR2Bucket, getR2Client } from "@/lib/r2";
 import { Material, User } from "@/models";
 import {
+  ADMIN_MAX_FILE_BYTES,
   isMaterialType,
   MAX_FILE_BYTES,
   oversizeMessage,
@@ -73,6 +74,12 @@ export async function uploadMaterial(
     return { status: "error", message: "Inicia sesión para subir materiales." };
   }
 
+  // Tope de tamano segun rol: se consulta en BD porque la sesion no trae el
+  // rol (mismo patron que `deleteMaterial`).
+  const dbUser = await User.findByPk(userId);
+  const isAdmin = dbUser?.get("role") === "admin";
+  const maxBytes = isAdmin ? ADMIN_MAX_FILE_BYTES : MAX_FILE_BYTES;
+
   // 2. Lectura y validacion del FormData. `formData.get` devuelve
   // `FormDataEntryValue | null` (string | File), asi que cada campo se
   // estrecha antes de usarse.
@@ -84,8 +91,8 @@ export async function uploadMaterial(
 
   // Revalidacion: el cliente ya filtra por tamano, pero la accion es un
   // endpoint publico y no puede confiar en eso.
-  if (file.size > MAX_FILE_BYTES) {
-    return { status: "error", message: oversizeMessage(file.size) };
+  if (file.size > maxBytes) {
+    return { status: "error", message: oversizeMessage(file.size, maxBytes) };
   }
 
   const courseId = Number(formData.get("courseId"));

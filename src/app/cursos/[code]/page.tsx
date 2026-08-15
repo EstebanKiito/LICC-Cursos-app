@@ -130,7 +130,11 @@ export default async function CoursePage({ params }: Props) {
         <div className="lg:order-1 lg:col-span-8">
           {/* El `userId` no se pasa como prop: la accion lo toma de la sesion
               en el servidor, donde el cliente no puede suplantarlo. */}
-          <UploadMaterialForm courseId={course.id} courseCode={course.code} />
+          <UploadMaterialForm
+            courseId={course.id}
+            courseCode={course.code}
+            isAdmin={isAdmin}
+          />
 
           <MaterialList
             materials={materials}

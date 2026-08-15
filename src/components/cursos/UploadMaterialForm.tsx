@@ -10,6 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import { uploadMaterial } from "@/app/actions/materials";
 import {
+  ADMIN_MAX_FILE_BYTES,
   formatMegabytes,
   INITIAL_UPLOAD_STATE,
   MATERIAL_TYPES,
@@ -22,6 +23,8 @@ type Props = {
   courseId: number;
   /** Solo para revalidar la ruta literal del curso tras subir. */
   courseCode: string;
+  /** Determina el tope de tamano mostrado y chequeado en el cliente. */
+  isAdmin: boolean;
 };
 
 /** Formatea bytes para el resumen del archivo elegido. */
@@ -35,7 +38,9 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function UploadMaterialForm({ courseId, courseCode }: Props) {
+export function UploadMaterialForm({ courseId, courseCode, isAdmin }: Props) {
+  const maxBytes = isAdmin ? ADMIN_MAX_FILE_BYTES : MAX_FILE_BYTES;
+
   // `useActionState` da el pending sin `useTransition` manual y mantiene el
   // formulario funcional aunque el JS aun no haya hidratado.
   const [state, formAction, pending] = useActionState(
@@ -52,12 +57,12 @@ export function UploadMaterialForm({ courseId, courseCode }: Props) {
   /**
    * Punto unico por el que entra un archivo, venga del selector o del drop.
    *
-   * El rechazo por tamano ocurre aca para no gastar una subida de 10MB que el
+   * El rechazo por tamano ocurre aca para no gastar una subida que el
    * servidor va a descartar igual. Es solo UX: `uploadMaterial` revalida.
    */
   function chooseFile(candidate: File | null) {
-    if (candidate && candidate.size > MAX_FILE_BYTES) {
-      setLocalError(oversizeMessage(candidate.size));
+    if (candidate && candidate.size > maxBytes) {
+      setLocalError(oversizeMessage(candidate.size, maxBytes));
       clearFile();
       return;
     }
@@ -124,7 +129,7 @@ export function UploadMaterialForm({ courseId, courseCode }: Props) {
       </h2>
       <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
         Arrastra un archivo o selecciónalo. Máximo{" "}
-        {formatMegabytes(MAX_FILE_BYTES)}.
+        {formatMegabytes(maxBytes)}.
       </p>
 
       {/* Zona de drop. El <label> hace que el click abra el selector nativo y

@@ -50,21 +50,32 @@ export const INITIAL_UPLOAD_STATE: UploadMaterialState = {
 };
 
 /**
- * Tope de tamano por archivo. Lo comparten el navegador (rechaza antes de
- * subir nada) y la Server Action (valida de nuevo, porque el cliente no es
- * confiable). Debe quedar por debajo de `serverActions.bodySizeLimit` y de
- * `proxyClientMaxBodySize` en `next.config.ts`, que hoy son 12mb: si el body
- * excede cualquiera de los dos, Next corta la request antes de la accion.
+ * Tope de tamano por archivo para usuarios sin rol admin. Lo comparten el
+ * navegador (rechaza antes de subir nada) y la Server Action (valida de
+ * nuevo, porque el cliente no es confiable). Pensado para quedar por debajo
+ * del limite real de body que impone Vercel en produccion (~4.5MB), aparte
+ * del limite propio de Next.js (`serverActions.bodySizeLimit` /
+ * `proxyClientMaxBodySize` en `next.config.ts`).
  */
-export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+export const MAX_FILE_BYTES = 5 * 1024 * 1024;
+
+/**
+ * Tope de tamano para usuarios con `role: "admin"`. Solo es alcanzable
+ * corriendo la app fuera de Vercel (local o self-hosted): el cap de body de
+ * Vercel se aplica antes de llegar a Next.js y ninguna config lo supera.
+ */
+export const ADMIN_MAX_FILE_BYTES = 100 * 1024 * 1024;
 
 export function formatMegabytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(0)} MB`;
 }
 
 /** Mensaje unico para el rechazo por tamano, igual en cliente y servidor. */
-export function oversizeMessage(bytes: number): string {
-  return `El archivo pesa ${formatMegabytes(bytes)}. El máximo es ${formatMegabytes(MAX_FILE_BYTES)}.`;
+export function oversizeMessage(
+  bytes: number,
+  maxBytes: number = MAX_FILE_BYTES,
+): string {
+  return `El archivo pesa ${formatMegabytes(bytes)}. El máximo es ${formatMegabytes(maxBytes)}.`;
 }
 
 export function isMaterialType(value: unknown): value is MaterialType {
