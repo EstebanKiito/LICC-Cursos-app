@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeftIcon, FileDashedIcon } from "@phosphor-icons/react/ssr";
+import { ArrowLeftIcon } from "@phosphor-icons/react/ssr";
 import { auth } from "@/auth";
+import { MaterialList } from "@/components/cursos/MaterialList";
+import { UploadMaterialForm } from "@/components/cursos/UploadMaterialForm";
 import {
   formatCredits,
   formatLevel,
@@ -11,6 +13,7 @@ import {
   getCourseLevel,
 } from "@/lib/course-format";
 import { getCourseByCode } from "@/lib/courses";
+import { getMaterialsByCourse } from "@/lib/materials";
 
 // `PageProps` es el helper global que genera `next typegen` (lo corren tanto
 // `next dev` como `next build`). En Next 16 `params` es un Promise: el acceso
@@ -60,6 +63,7 @@ export default async function CoursePage({ params }: Props) {
   }
 
   const level = getCourseLevel(course.code);
+  const materials = await getMaterialsByCourse(course.id);
 
   return (
     <section className="mx-auto max-w-7xl px-6 pt-16 pb-24">
@@ -118,21 +122,11 @@ export default async function CoursePage({ params }: Props) {
         </aside>
 
         <div className="lg:order-1 lg:col-span-8">
-          {/* TODO Fase 3: reemplazar por el listado real de materiales. */}
-          <div className="flex flex-col items-center rounded-xl border-2 border-dashed border-zinc-200 px-6 py-16 text-center dark:border-zinc-800">
-            <FileDashedIcon
-              weight="bold"
-              aria-hidden
-              className="h-6 w-6 text-zinc-400 dark:text-zinc-500"
-            />
-            <p className="mt-4 text-base font-medium text-zinc-900 dark:text-zinc-50">
-              Aquí irá la sección de materiales/archivos
-            </p>
-            <p className="mt-2 max-w-[45ch] text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Guías, pruebas y apuntes de {course.code} van a vivir en este
-              espacio.
-            </p>
-          </div>
+          {/* El `userId` no se pasa como prop: la accion lo toma de la sesion
+              en el servidor, donde el cliente no puede suplantarlo. */}
+          <UploadMaterialForm courseId={course.id} courseCode={course.code} />
+
+          <MaterialList materials={materials} courseCode={course.code} />
         </div>
       </div>
     </section>
